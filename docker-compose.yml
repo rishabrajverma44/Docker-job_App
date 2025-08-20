@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  frontend:
+    build: ./react-ts
+    container_name: jobApp_frontend
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+
+  backend:
+    build: ./NODE-js
+    container_name: jobApp_backend
+    ports:
+      - 3000:3000
+    environment:
+      - CONNECTION_STRING=mongodb://database:27017/jobAppDB
+    depends_on:
+      - database
+
+  database:
+    image: mongo:7.0
+    container_name: jobApp_db
+    ports:
+      - 27017:27017
+    volumes:
+      - test:/data/db
+
+  nginx:
+    image: nginx:alpine
+    container_name: jobApp_nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./react-ts/dist:/usr/share/nginx/html
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  test:
